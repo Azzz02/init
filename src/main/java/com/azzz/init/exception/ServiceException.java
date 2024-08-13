@@ -1,10 +1,12 @@
 package com.azzz.init.exception;
 
 import com.azzz.init.common.ErrorCode;
+import lombok.Getter;
 
 /**
  * 自定义业务异常类
  */
+@Getter
 public class ServiceException extends RuntimeException{
 
     private final int code;

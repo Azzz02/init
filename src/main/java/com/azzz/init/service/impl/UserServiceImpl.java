@@ -1,6 +1,8 @@
 package com.azzz.init.service.impl;
 
 import cn.hutool.crypto.digest.DigestUtil;
+import com.azzz.init.common.ErrorCode;
+import com.azzz.init.exception.ServiceException;
 import com.azzz.init.model.dto.user.UserLoginReq;
 import com.azzz.init.model.dto.user.UserRegisterReq;
 import com.azzz.init.model.entity.user.User;
@@ -34,7 +36,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Override
     public Long userRegister(UserRegisterReq userRegisterReq) {
         if(userRegisterReq == null){
-            return null;
+            throw new ServiceException(ErrorCode.PARAM_ERROR,"参数错误");
         }
 
         String userAccount = userRegisterReq.getUseraccount();
@@ -42,12 +44,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         String checkPassword = userRegisterReq.getCheckPassword();
         //参数有误为空
         if(StringUtils.isAnyBlank(userAccount,userPassword,checkPassword)){
-            return null;
+            throw new ServiceException(ErrorCode.PARAM_ERROR,"参数错误");
         }
 
         //两次输入密码不一致
         if(!StringUtils.equals(userPassword,checkPassword)){
-            return null;
+            throw new ServiceException(ErrorCode.PARAM_ERROR,"两次密码不一致");
         }
         String encryptPassword = DigestUtil.md5Hex(userPassword);
 
@@ -62,16 +64,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         queryWrapper.eq("userAccount",userAccount);
         User oldUser = this.getOne(queryWrapper);
         if(oldUser != null){
-            return null;
+            throw new ServiceException(ErrorCode.PARAM_ERROR,"账号已存在");
         }
 
-        User user = this.getOne(queryWrapper);
-        if(user != null){
-            return null;
-        }
         boolean save = this.save(newUser);
         if(!save){
-            return null;
+            throw new ServiceException(ErrorCode.OPERATION_ERROR,"用户添加失败");
         }
 
         return newUser.getId();
@@ -85,14 +83,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Override
     public UserVO userLogin(UserLoginReq userLoginReq) {
         if(userLoginReq == null){
-            return null;
+            throw new ServiceException(ErrorCode.PARAM_ERROR,"参数错误");
         }
 
         String userAccount = userLoginReq.getUseraccount();
         String userPassword = userLoginReq.getUserpassword();
 
         if(StringUtils.isAnyBlank(userAccount,userPassword)){
-            return null;
+            throw new ServiceException(ErrorCode.PARAM_ERROR,"用户不存在或密码错误");
         }
 
         String encryptPassword = DigestUtil.md5Hex(userPassword);
@@ -103,7 +101,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
         User user = this.getOne(queryWrapper);
         if(user == null){
-            return null;
+            throw new ServiceException(ErrorCode.PARAM_ERROR,"用户不存在或密码错误");
         }
 
         UserVO userVo = new UserVO();
